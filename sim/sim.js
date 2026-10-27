@@ -130,11 +130,11 @@ const POLICIES = {
 };
 
 // Days of play: one session of `minutes` per day, offline time until the next day (capped by the economy).
-// offlineFrom: 'after' pays last night from the squad after Bedtime (what the spec says),
-// 'before' pays it from the squad the child said Goodnight to. offline: false turns offline earnings off.
+// offlineFrom: 'before' (default, owner decision 2026-10-27) pays last night from the squad the child said Goodnight to;
+// 'after' pays it from the squad after the Bedtime reset (the spec read literally). offline: false turns it off.
 function days(opts) {
   const { n, minutes, tps, policy } = opts;
-  const offlineFrom = opts.offlineFrom || 'after';
+  const offlineFrom = opts.offlineFrom || 'before';
   let run = E.newRun();
   let best = 1;
   const rows = [];

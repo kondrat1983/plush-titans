@@ -6,17 +6,17 @@
 
   const C = {
     // Titans
-    HP0: 10,             // HP of the stage 1 Titan
+    HP0: 6,              // HP of the stage 1 Titan
     G: 1.35,             // HP growth per stage
     BOSS_EVERY: 10,      // every 10th stage is a boss Titan
     BOSS_MUL: 3,         // boss HP multiplier
     BOSS_TIME: 30,       // seconds to beat a boss, else back one stage (stars kept)
-    KILLS_PER_STAGE: 5,  // Titans to defeat on a normal stage before the next one [?]
+    KILLS_PER_STAGE: 10, // Titans to defeat on a normal stage before the next one
     TITAN_SWAP_S: 0.6,   // seconds between a Titan falling asleep and the next one arriving
 
     // Stars
     STAR0: 1,            // stars for a stage 1 Titan
-    G_STAR: 1.31,        // star growth per stage (below G, so progress slows down: the wall)
+    G_STAR: 1.3,         // star growth per stage (below G, so progress slows down: the wall)
     BOSS_STARS: 8,       // boss star multiplier
 
     // Taps

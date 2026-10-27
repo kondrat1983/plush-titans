@@ -145,7 +145,7 @@ md.push('');
 md.push('| Policy | ' + Array.from({ length: DAYS }, (_, i) => `D${i + 1}`).join(' | ') + ' | Bedtimes |');
 md.push('|---|' + '---|'.repeat(DAYS + 1));
 for (const policy of ['nightly', 'smart']) {
-  const rows = run({ minutes: 15, tps: 5, policy, offlineFrom: 'after', tag: 'policy' });
+  const rows = run({ minutes: 15, tps: 5, policy, offlineFrom: 'before', tag: 'policy' });
   md.push(`| ${policy} | ${rows.map((r) => r.bestStage).join(' | ')} | ${rows.filter((r) => r.bedtime).length} |`);
 }
 md.push('');
