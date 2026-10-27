@@ -66,7 +66,8 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:poin
 .moonclock{width:40px;height:40px;flex:none}
 
 /* the big tap area */
-#arena{flex:1;position:relative;min-height:150px;touch-action:manipulation}
+#arena{flex:1;position:relative;min-height:150px}
+*{touch-action:none}
 #titan{position:absolute;left:50%;top:52%;width:min(78vw,52vh,420px);transform:translate(-50%,-50%);transition:opacity .4s}
 #titan.hit{animation:squash .16s}
 @keyframes squash{50%{transform:translate(-50%,-50%) scale(1.06,.92)}}
@@ -171,7 +172,7 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:poin
     </button>
   </div>
 </div>
-<button class="mock" id="mock">mock-up v0.1 · Normal</button>
+<button class="mock" id="mock">mock-up v0.2 · Normal</button>
 
 <script src="../js/economy.js"></script>
 <script>
@@ -250,7 +251,7 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:poin
   function reset() {
     var m = MODES[mode];
     st = { stage: m.stage, kills: 4, stars: m.stage > 100 ? 4.2e17 : m.stage === 30 ? 152000 : 12400, ti: 0, tapped: false, bossLeft: C.BOSS_TIME };
-    $('mock').textContent = 'mock-up v0.1 · ' + m.label;
+    $('mock').textContent = 'mock-up v0.2 · ' + m.label;
     $('world').textContent = m.world;
     newTitan();
   }
@@ -377,10 +378,21 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:poin
     }
   }, 250);
 
-  $('moonBtn').onclick = function () { toast('Bedtime screen goes here: Dreams to earn now, Goodnight.', 2200); };
-  $('squadBtn').onclick = function () { toast('Squad screen goes here: level up x1, x10, max.', 2200); };
-  $('mute').onclick = function () { var w = $('waves'); w.style.display = w.style.display === 'none' ? '' : 'none'; };
-  $('mock').onclick = function () { mode = (mode + 1) % MODES.length; reset(); };
+  // iOS Safari ignores user-scalable=no: fast taps zoom the page. Swallow the browser's own touch gestures
+  // (double-tap zoom, pinch) and drive the buttons from pointer events instead of click.
+  ['touchend', 'gesturestart', 'gesturechange', 'dblclick'].forEach(function (ev) {
+    document.addEventListener(ev, function (e) { e.preventDefault(); }, { passive: false });
+  });
+  function onTap(el, fn) {
+    el.addEventListener('pointerup', function (e) {
+      var r = el.getBoundingClientRect();
+      if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) fn();
+    });
+  }
+  onTap($('moonBtn'), function () { toast('Bedtime screen goes here: Dreams to earn now, Goodnight.', 2200); });
+  onTap($('squadBtn'), function () { toast('Squad screen goes here: level up x1, x10, max.', 2200); });
+  onTap($('mute'), function () { var w = $('waves'); w.style.display = w.style.display === 'none' ? '' : 'none'; });
+  onTap($('mock'), function () { mode = (mode + 1) % MODES.length; reset(); });
 
   renderSquad();
   reset();
