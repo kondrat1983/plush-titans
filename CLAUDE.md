@@ -43,7 +43,10 @@ Pages, approved by the owner on his iPhone -> M1.** No production game code befo
 
 1. Feature (new mechanic, world, Titan, hero, reward, balance change): `game-designer` agent writes a doc in
    `docs/gdd/` first, from real code values, with acceptance criteria. Owner approves. Bug fixes and hotfixes skip this.
-2. One branch, one PR per task (`claude/<version-or-topic>`). Small, ordered commits. The owner merges, never merge without his OK.
+2. One branch, one PR per task (`claude/<version-or-topic>`). Small, ordered commits.
+   **Claude merges its own PRs** (owner decision 2026-10-27) when CI is green and QA found no S1/S2, then tells
+   the owner in one short list. Still ask first for: anything waiting on his approval (the battle mock-up, design
+   docs), Supabase changes, and anything that breaks a play-fair rule.
 3. **Test first** for anything that touches the economy, saving, offline earnings or Bedtime.
    Test behaviour, not implementation. Fix root causes, not symptoms.
 4. `/code-review` before the PR; fix Important findings; note them in the PR description.

@@ -2,6 +2,10 @@
 
 Owner decisions, newest on top. Agents treat them as rules; a change is proposed only as an explicit question.
 
+## 2026-10-27 (merging)
+- **Claude merges its own PRs** after CI is green and QA found no S1/S2, then tells the owner what changed.
+  Things that wait on the owner's approval (battle mock-up, design docs, Supabase changes) still wait.
+
 ## 2026-10-27 (open questions, spec §11)
 - Name: keep **Plush Titans**.
 - Game UI language: **English first**, as in Plush Squad; UK/RU later.
