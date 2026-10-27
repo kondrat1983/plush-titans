@@ -7,7 +7,7 @@ Code: `js/save.js`. Tests: `tests/unit/save.test.js`.
 | Key | What | Synced later (M2) |
 |---|---|---|
 | `plushtitans_v1` | the game save (JSON, below) | yes |
-| `plushtitans_prefs` | device-only prefs (volume, calm mode, handedness), planned | never |
+| `plushtitans_prefs` | device-only prefs (sound on/off, volume, calm mode, handedness), comes with audio | never |
 
 ## `plushtitans_v1`, schema `v: 1`
 
@@ -25,7 +25,6 @@ Code: `js/save.js`. Tests: `tests/unit/save.test.js`.
 | `bestStage` | int | best stage ever |
 | `seen` | `{ flag: 1 }` | one-time announcements already shown |
 | `seenVersion` | string | What's new shown for this `major.minor` |
-| `muted` | bool | sound off |
 | `parents.bedtime` | `"HH:MM"` or null | parent's bedtime |
 | `parents.limitMin` | int or null | daily play limit in minutes |
 

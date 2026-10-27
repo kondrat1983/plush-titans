@@ -18,7 +18,6 @@
       bestStage: 1,
       seen: {},           // one-time announcements already shown (first boss, first Bedtime, ...)
       seenVersion: '',    // What's new shown for this major.minor
-      muted: false,
       parents: { bedtime: null, limitMin: null },
     };
   }
@@ -35,7 +34,8 @@
   }
 
   // Ordered, idempotent steps. Fills what is missing, repairs bad numbers, never removes good data.
-  function migrate(d) {
+  // opts.steps: extra steps for tests (each sees the save with the version it was written with).
+  function migrate(d, opts) {
     const base = defaults();
     if (!isObj(d)) d = {};
     const r = isObj(d.run) ? d.run : {};
@@ -52,16 +52,17 @@
     };
     run.maxStage = Math.max(run.maxStage, run.stage);
     const out = Object.assign({}, d, {
-      v: Math.max(int(d.v, 1, 1), SAVE_V),
+      v: int(d.v, 1, 1), // the version the save was written with; raised after the steps below
       savedAt: num(d.savedAt, 0, 0),
       run: Object.assign({}, r, run),
       bestStage: Math.max(int(d.bestStage, 1, 1), run.maxStage),
       seen: isObj(d.seen) ? d.seen : {},
       seenVersion: typeof d.seenVersion === 'string' ? d.seenVersion : '',
-      muted: d.muted === true,
       parents: Object.assign({}, base.parents, isObj(d.parents) ? d.parents : {}),
     });
-    // future steps go here: if (out.v < 2) { ...; out.v = 2; }
+    // future steps go here, in order: if (out.v < 2) { ...; out.v = 2; }
+    ((opts && opts.steps) || []).forEach((step) => step(out));
+    out.v = Math.max(out.v, SAVE_V); // never lower (a save from a newer version keeps its number)
     return out;
   }
 
@@ -79,8 +80,9 @@
         S.data = migrate(d);
         return S.data;
       },
-      store() {
-        S.data.savedAt = now();
+      // keepTime: keep savedAt as it is (debug setSave seeds a past time for offline tests)
+      store(o) {
+        if (!(o && o.keepTime)) S.data.savedAt = now();
         try { storage && storage.setItem(KEY, JSON.stringify(S.data)); } catch (e) { /* private mode or full: keep playing */ }
         if (opts.onStore) { try { opts.onStore(S.data); } catch (e) {} }
       },
@@ -88,6 +90,7 @@
         return JSON.stringify(S.data);
       },
       // Replaces the save with one from another device. Refuses anything that is not a Plush Titans save.
+      // savedAt becomes now: moving a save to another device does not pay offline stars.
       importJSON(text) {
         let d;
         try { d = JSON.parse(text); } catch (e) { return false; }

@@ -25,8 +25,14 @@
       if (o.shadow) t.setShadow(0, Math.round(size / 12), 'rgba(58,44,92,0.6)', 0, true, true);
       return t;
     }
-    // shrink a text to a max width (never below MIN_TEXT: then wrap instead)
-    const fit = (t, maxW) => { if (t.width > maxW) t.setScale(maxW / t.width); return t; };
+    // shrink a text to a max width, but never below MIN_TEXT (a longer text needs a wrap or a shorter label)
+    const fit = (t, maxW) => {
+      if (t.width <= maxW) return t;
+      const size = parseFloat(t.style.fontSize) || MIN_TEXT;
+      t.setScale(Math.max(maxW / t.width, Math.min(1, MIN_TEXT / size)));
+      if (PT.DEBUG && t.displayWidth > maxW + 1) console.warn('text does not fit at MIN_TEXT:', t.text);
+      return t;
+    };
     const tw = (scene, cfg) => new Promise((r) => scene.tweens.add(Object.assign({}, cfg, { onComplete: () => { cfg.onComplete && cfg.onComplete(); r(); } })));
     const wait = (scene, ms) => new Promise((r) => scene.time.delayedCall(ms, r));
 
@@ -80,22 +86,39 @@
       return c;
     }
 
-    // a short message at the top of the play area; one at a time, counted for the rotation guard, dies with its scene
+    // A short message. One at a time: a new one waits in the scene's queue (every message is seen, once).
+    // It sits where the scene says (scene.toastY), clear of the logo and the Titan; it dies with its scene.
+    // window.__ptToasts counts shown + waiting toasts for the rotation guard.
     function toast(scene, text, ms) {
       if (PT.DEBUG) (window.__ptToastLog = window.__ptToastLog || []).push(text); // tests read what was shown
-      if (scene._ptToast) { scene._ptToast.destroy(); window.__ptToasts = Math.max(0, (window.__ptToasts || 1) - 1); }
       window.__ptToasts = (window.__ptToasts || 0) + 1;
-      const y = PT.PORTRAIT ? H * 0.3 : H * 0.22;
+      if (!scene._ptToastQ) {
+        scene._ptToastQ = [];
+        scene.events.once('shutdown', () => {
+          window.__ptToasts = Math.max(0, (window.__ptToasts || 0) - scene._ptToastQ.length - (scene._ptToast ? 1 : 0));
+          scene._ptToastQ = null; scene._ptToast = null;
+        });
+      }
+      scene._ptToastQ.push([text, ms || 2000]);
+      if (!scene._ptToast) showNext(scene);
+    }
+    function showNext(scene) {
+      const q = scene._ptToastQ;
+      if (!q || !q.length) return;
+      const [text, ms] = q.shift();
+      const y = scene.toastY != null ? scene.toastY : H * 0.5;
       const t = txt(scene, 0, 0, text, 44, C.ink, { wrap: Math.min(W - 160, 900) });
       const w = Math.min(t.width + 90, W - 80), h = t.height + 60;
       const c = scene.add.container(W / 2, y, [card(scene, 0, 0, w, h, C.card), t]).setDepth(900).setAlpha(0);
       scene._ptToast = c;
-      let done = false;
-      const end = () => { if (done) return; done = true; window.__ptToasts = Math.max(0, (window.__ptToasts || 1) - 1); if (scene._ptToast === c) scene._ptToast = null; c.destroy(); };
       scene.tweens.add({ targets: c, alpha: 1, duration: 150 });
-      scene.time.delayedCall(ms || 2000, () => scene.tweens.add({ targets: c, alpha: 0, duration: 200, onComplete: end }));
-      scene.events.once('shutdown', end);
-      return c;
+      scene.time.delayedCall(ms, () => scene.tweens.add({ targets: c, alpha: 0, duration: 200, onComplete: () => {
+        c.destroy();
+        scene._ptToast = null;
+        window.__ptToasts = Math.max(0, (window.__ptToasts || 1) - 1);
+        showNext(scene);
+        if (!scene._ptToast && window.__ptRotatePending && window.__ptTryRebuild) window.__ptTryRebuild();
+      } }));
     }
 
     // the sky, the pillow hills and two clouds, bleeding under the status bar and home bar

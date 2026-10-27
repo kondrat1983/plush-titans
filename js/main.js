@@ -21,7 +21,12 @@
     // everything a scene needs, rebuilt for each screen shape
     const PT = { VERSION, DEBUG, RESUME, L, W: L.W, H: L.H, PORTRAIT: L.PORTRAIT, Save, E: window.PTEconomy, U: window.PTUtil };
     PT.ui = PTUI.make(PT);
-    const scenes = (window.PTScenes || []).map((f) => f(PT));
+    // plugins (window.PTPlugins: { name, scenes(PT), onEvent(name, data, scene, PT) }) hang on events and never touch
+    // scene code; one broken plugin never stops the game. Events: scene, tap, upgrade, kill, boss, bedtime, offlineReward, milestone
+    const plugins = window.PTPlugins || [];
+    PT.emit = (name, data, scene) => plugins.forEach((p) => { try { p.onEvent && p.onEvent(name, data, scene, PT); } catch (e) { console.warn('plugin', p.name, e); } });
+    const scenes = (window.PTScenes || []).map((f) => f(PT))
+      .concat(...plugins.map((p) => { try { return p.scenes ? p.scenes(PT) : []; } catch (e) { console.warn('plugin scenes', p.name, e); return []; } }));
 
     const safeCam = (sc) => sc.cameras.main.setScroll(-L.SL, -L.ST);
     const game = new Phaser.Game({
@@ -37,6 +42,9 @@
       sc.events.on('create', () => {
         safeCam(sc);
         if (sc.scene.key === 'boot') return;
+        PT.emit('scene', { key: sc.scene.key }, sc);
+        // a new version arrived during play: reload now, on the title screen, never in the middle of a fight
+        if (sc.scene.key === 'title' && window.__ptReloadPending) { Save.store(); location.reload(); return; }
         if (window.__ptRotatePending) sc.time.delayedCall(100, () => window.__ptTryRebuild());
         [700, 2200].forEach((t) => sc.time.delayedCall(t, () => PTLayout.tintPage(game, L)));
       });
@@ -61,7 +69,9 @@
         scene: (key, data) => { const sc = game.scene.getScenes(true)[0]; sc.scene.start(key, data || {}); },
         active: () => game.scene.getScenes(true).map((s) => s.scene.key),
         save: () => Save.data,
-        setSave: (d) => { Save.data = PTSave.migrate(d); Save.store(); },
+        setSave: (d) => { Save.data = PTSave.migrate(d); Save.store({ keepTime: true }); },
+        giveStars: (n) => { Save.data.run.stars += n; Save.store(); },
+        // tick(ms) and fastForward(hours) come with the battle scene (the economy loop lives there)
       };
     }
   }

@@ -80,6 +80,29 @@ test('migration is idempotent', () => {
   assert.deepEqual(twice, once);
 });
 
+test('migration steps see the version the save was written with', () => {
+  // a step added later reads d.v before it is bumped; simulate it with the step hook
+  const seen = [];
+  const d = S.migrate({ v: 1, run: { stage: 2 } }, { steps: [(x) => { seen.push(x.v); }] });
+  assert.deepEqual(seen, [1]);
+  assert.equal(d.v, S.SAVE_V);
+});
+
+test('store can keep savedAt (debug setSave seeds a past time for offline tests)', () => {
+  const st = memStorage();
+  const s = S.createSave({ storage: st, now: () => 5000 });
+  s.load();
+  s.data.savedAt = 1000;
+  s.store({ keepTime: true });
+  assert.equal(JSON.parse(st.raw[S.KEY]).savedAt, 1000);
+  s.store();
+  assert.equal(JSON.parse(st.raw[S.KEY]).savedAt, 5000);
+});
+
+test('device settings like sound are not in the game save', () => {
+  assert.equal('muted' in S.defaults(), false);
+});
+
 test('a save from a newer version is not downgraded', () => {
   const d = S.migrate({ v: S.SAVE_V + 5, run: { stage: 3 }, future: { x: 1 } });
   assert.equal(d.v, S.SAVE_V + 5);

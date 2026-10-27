@@ -24,6 +24,8 @@
     ui.button(this, colX - half / 2 - 15, rowY, half, 140, '+ TOY', () => ui.toast(this, 'Toy photos come in a later update.'), { color: PT.ui.C.card, size: 56 });
     ui.button(this, colX + half / 2 + 15, rowY, half, 140, 'PARENTS', () => ui.toast(this, 'Parents area comes in a later update.'), { color: PT.ui.C.card, size: 50 });
     ui.versionLabel(this);
+    // messages go under the buttons, clear of the logo and the Titan
+    this.toastY = PORTRAIT ? Math.min(H - 110, rowY + 190) : Math.min(H - 90, rowY + 160);
   }
   go() {
     if (this.scene.manager.keys.battle) PT.ui.fade(this, 'battle');

@@ -12,9 +12,12 @@
     if (n < 1000) return String(Math.floor(n));
     let u = Math.floor(Math.log10(n) / 3);
     let v = n / Math.pow(1000, u);
-    if (v >= 999.5) { u++; v /= 1000; } // 999,999 -> 1.00M, not 1000K
-    // pick the decimals after rounding, so 9.999 shows 10.0, not 10.00
-    const num = v < 9.995 ? v.toFixed(2) : v < 99.95 ? v.toFixed(1) : String(Math.floor(v));
+    if (v >= 1000 - 1e-9) { u++; v /= 1000; } // log10 rounding at an exact power of 1000
+    if (v < 1) { u--; v *= 1000; }
+    // always round down: the number on screen is never more than the child has, and it never goes down as it grows
+    // (the 1e-9 absorbs float noise like 4.2 -> 4.1999999; the cap keeps 9.9999999 at 9.99, never 10.00)
+    const down = (x, d, cap) => Math.min(Math.floor(x * Math.pow(10, d) + 1e-9), cap * Math.pow(10, d) - 1) / Math.pow(10, d);
+    const num = v < 10 ? down(v, 2, 10).toFixed(2) : v < 100 ? down(v, 1, 100).toFixed(1) : String(down(v, 0, 1000));
     if (u < UNITS.length) return num + UNITS[u];
     const k = u - UNITS.length; // 0 = aa
     if (k >= A.length * A.length) return '∞';

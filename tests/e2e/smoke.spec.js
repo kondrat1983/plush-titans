@@ -67,5 +67,7 @@ test('PLAY, + TOY and PARENTS answer a tap', async ({ page }) => {
   // each tap showed its message (a log, not the live toast: at 2-3 fps a toast can come and go between two checks)
   const log = await page.evaluate(() => window.__ptToastLog || []);
   expect(log.length, JSON.stringify(log)).toBe(3);
+  // they queue, one after another, and the count for the rotation guard goes back to 0
+  await page.waitForFunction(() => (window.__ptToasts || 0) === 0, null, { timeout: 60000 });
   noErrors(page);
 });

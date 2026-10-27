@@ -8,7 +8,7 @@ const KEY = 'plushtitans_v1';
 // a mid-game save; every one-time announcement already seen so no popup shows up in unrelated tests
 const BASE_SAVE = {
   v: 1, run: { stage: 23, kills: 4, maxStage: 23, stars: 12400, tapLvl: 12, heroes: { fluffy: 34, bear: 27, bunny: 15, dino: 4 }, dreams: 0, dreamsTotal: 0, dreamLvls: {} },
-  bestStage: 23, seen: { all: 1 }, seenVersion: '0.1', muted: true, parents: { bedtime: null, limitMin: null },
+  bestStage: 23, seen: { all: 1 }, seenVersion: '0.1', parents: { bedtime: null, limitMin: null },
 };
 
 // device sizes (QA layout matrix)

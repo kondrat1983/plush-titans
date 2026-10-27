@@ -33,6 +33,20 @@ test('fmt: never shows NaN, Infinity or a minus sign', () => {
   assert.ok(!/NaN|undefined/.test(U.fmt(1e308)));
 });
 
+test('fmt never rounds up and never goes down while the number goes up', () => {
+  assert.equal(U.fmt(99960), '99.9K');
+  assert.equal(U.fmt(9999), '9.99K');
+  assert.equal(U.fmt(999999), '999K');
+  let prev = -1, prevS = '';
+  const val = (s) => { const m = s.match(/^([\d.]+)(.*)$/); const order = ['', 'K', 'M', 'B', 'T'].indexOf(m[2]); return parseFloat(m[1]) * Math.pow(1000, order < 0 ? 5 + (m[2].charCodeAt(0) - 97) * 26 + (m[2].charCodeAt(1) - 97) : order); };
+  for (let n = 1; n < 1e40; n *= 1.0007) {
+    const s = U.fmt(n), v = val(s);
+    assert.ok(v <= n * (1 + 1e-9), `${n} shows ${s} (rounded up)`);
+    assert.ok(v >= prev, `${n}: ${s} after ${prevS}`);
+    prev = v; prevS = s;
+  }
+});
+
 test('fmt: never longer than 6 characters for any number a child can reach', () => {
   for (let e = 0; e < 300; e += 0.37) {
     const s = U.fmt(Math.pow(10, e));

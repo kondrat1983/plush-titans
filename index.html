@@ -53,8 +53,12 @@ html,body{margin:0;height:100%;background:#7fbf8f;overflow:hidden;overscroll-beh
 if ('serviceWorker' in navigator && location.protocol === 'https:' && !/claude\.ai|claudeusercontent|itch\.zone|itch\.io|hwcdn\.net/.test(location.hostname)) {
   var hadController = !!navigator.serviceWorker.controller, reloaded = false;
   navigator.serviceWorker.addEventListener('controllerchange', function () {
-    // a new version just took over: reload once so the child sees it right away
-    if (hadController && !reloaded) { reloaded = true; location.reload(); }
+    // a new version just took over: reload once, but only on the title screen (never in the middle of a fight);
+    // otherwise main.js reloads the next time the title opens
+    if (!hadController || reloaded) return;
+    var g = window.__game;
+    if (g && g.scene && g.scene.isActive('title')) { reloaded = true; if (window.__save) window.__save.store(); location.reload(); }
+    else window.__ptReloadPending = true;
   });
   window.addEventListener('load', function () {
     navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function (reg) { reg.update(); }).catch(function () {});
