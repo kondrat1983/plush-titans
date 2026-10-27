@@ -7,16 +7,16 @@
   const C = {
     // Titans
     HP0: 10,             // HP of the stage 1 Titan
-    G: 1.39,             // HP growth per stage
+    G: 1.35,             // HP growth per stage
     BOSS_EVERY: 10,      // every 10th stage is a boss Titan
-    BOSS_MUL: 6,         // boss HP multiplier
+    BOSS_MUL: 3,         // boss HP multiplier
     BOSS_TIME: 30,       // seconds to beat a boss, else back one stage (stars kept)
     KILLS_PER_STAGE: 5,  // Titans to defeat on a normal stage before the next one [?]
     TITAN_SWAP_S: 0.6,   // seconds between a Titan falling asleep and the next one arriving
 
     // Stars
     STAR0: 1,            // stars for a stage 1 Titan
-    G_STAR: 1.33,        // star growth per stage (below G, so progress slows down: the wall)
+    G_STAR: 1.31,        // star growth per stage (below G, so progress slows down: the wall)
     BOSS_STARS: 8,       // boss star multiplier
 
     // Taps
@@ -35,30 +35,31 @@
     HERO_ORDER: ['fluffy', 'bear', 'bunny', 'dino'],
 
     // Bedtime and Dreams
-    D_MIN: 15,           // first stage that pays any Dreams
+    D_MIN: 20,           // first stage that pays any Dreams
     D_DIV: 5,
     D_EXP: 1.5,
+    // Each level multiplies by (1 + step); cost = round(cost0 * costR^level) + level.
     DREAM_UPGRADES: {
-      nightlight: { what: 'tap', step: 0.5, cost0: 1, costR: 1.6 },   // night-lights: tap damage
-      fort: { what: 'dps', step: 0.5, cost0: 1, costR: 1.6 },         // blanket forts: squad DPS
-      lullaby: { what: 'stars', step: 0.25, cost0: 2, costR: 1.7 },   // lullabies: stars per kill
+      nightlight: { what: 'tap', step: 1, cost0: 1, costR: 1.3 },     // night-lights: tap damage
+      fort: { what: 'dps', step: 1, cost0: 1, costR: 1.3 },               // blanket forts: squad DPS
+      lullaby: { what: 'stars', step: 0.5, cost0: 2, costR: 1.4 },    // lullabies: stars per kill
     },
     DREAM_ORDER: ['nightlight', 'fort', 'lullaby'],
 
     // Offline
     OFFLINE_CAP_H: 8,    // one night, a rule (README §2), not a setting
-    OFFLINE_RATE: 0.1,   // share of the squad's passive stars paid while away [?]
+    OFFLINE_RATE: 0.03,  // share of the squad's passive stars paid while away [?]
   };
 
   const isBoss = (s) => s % C.BOSS_EVERY === 0;
 
   function dreamMult(id, lvl) {
-    return 1 + C.DREAM_UPGRADES[id].step * (lvl || 0);
+    return Math.pow(1 + C.DREAM_UPGRADES[id].step, lvl || 0);
   }
 
   function dreamCost(id, lvl) {
     const u = C.DREAM_UPGRADES[id];
-    return Math.round(u.cost0 * Math.pow(u.costR, lvl));
+    return Math.round(u.cost0 * Math.pow(u.costR, lvl)) + lvl; // + lvl: every level costs more than the last
   }
 
   const lv = (dl, id) => (dl && dl[id]) || 0;
