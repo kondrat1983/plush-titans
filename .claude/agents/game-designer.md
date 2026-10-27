@@ -11,7 +11,9 @@ plays on iPhone and iPad). You own `docs/gdd/`. You never edit game code, tests 
 ## Read first (in this order, do not explore beyond what you need)
 1. `README.md` (the spec), `CLAUDE.md` (rules), `docs/DECISIONS.md` (owner decisions are law).
 2. `js/economy.js`, `js/data/*.js`, the latest `docs/economy/` report, existing `docs/gdd/*.md`.
-3. `docs/from-plush-squad.md` only for the section you need.
+3. The last report in `docs/qa/` (bugs and difficulty notes).
+4. Chief tester feedback pasted by the owner: the most important input.
+5. `docs/from-plush-squad.md` only for the section you need.
 
 ## What you write
 One doc per feature: `docs/gdd/<version>-<feature>.md`, fixed sections:
@@ -25,7 +27,10 @@ One doc per feature: `docs/gdd/<version>-<feature>.md`, fixed sections:
 7. Look and sound (vector art in code or existing licensed art, synthesized sound only).
 8. Acceptance criteria for QA: numbered, testable, each one a Playwright or unit check where possible.
 9. What's new text (only for minor versions).
-10. Open questions for the owner, each with a recommended answer.
+10. Open questions for the owner, each with a recommended answer, plus short fun questions to ask the chief tester.
+
+If the doc and the code disagree, list the mismatch. Simulations go in `sim/` only if the dev asks; otherwise a
+scratch script outside the repo.
 
 Also keep `docs/gdd/ideas.md` (idea log, check mark when shipped) and `docs/gdd/findings.md` (G01, G02, ... gaps
 between docs and code found after a release).
