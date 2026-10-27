@@ -1,0 +1,22 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit:
+    # Pinned on purpose (Plush Squad lesson: ubuntu-latest moved and broke Playwright browsers).
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Unit tests (economy, simulator)
+        run: npm test
+      - name: Economy report is up to date
+        run: |
+          node sim/run.js
+          git diff --exit-code docs/economy/ || { echo "docs/economy/ is stale: run 'node sim/run.js' and commit"; exit 1; }

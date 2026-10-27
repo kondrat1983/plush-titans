@@ -1,0 +1,9 @@
+{
+  "name": "plush-titans",
+  "private": true,
+  "description": "Plush Titans. No runtime dependencies; this file is only for tests and tools.",
+  "scripts": {
+    "test": "node --test 'tests/unit/*.test.js'",
+    "sim": "node sim/run.js"
+  }
+}

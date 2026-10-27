@@ -4,7 +4,7 @@ Tap-idle game on Phaser 3 where the heroes are a child's real toys. Spec: `READM
 Lessons from the sister game: `docs/from-plush-squad.md` (section numbers below like "PS §5" point there).
 Owner decisions: `docs/DECISIONS.md` (newest on top). They are rules; propose a change only as an explicit question.
 
-Status: pre-M0. No game code yet. Order of work: **M0 economy simulator -> static battle-screen mock-up on
+Status: M0 (economy simulator). No game code yet. Order of work: **M0 economy simulator -> static battle-screen mock-up on
 Pages, approved by the owner on his iPhone -> M1.** No production game code before the mock-up is approved.
 
 ---
@@ -126,13 +126,14 @@ give each agent exact paths and rules up front. Agents use their own port and Pl
 
 ## Commands
 
-Nothing yet. Planned:
+```
+npm test                              # unit tests: node --test 'tests/unit/*.test.js' (no install needed)
+npm run sim                           # economy report -> docs/economy/report.md, day1.csv, days.csv
+```
 
-```
-node --test sim/ tests/unit/          # unit tests (economy, save)
-node sim/run.js                       # economy report -> docs/economy/
-python3 -m http.server 8765           # play: http://localhost:8765/index.html?debug
-npx playwright test                   # browser tests
-```
+CI fails if `docs/economy/` is stale: after any change to `js/economy.js` or `sim/`, run `npm run sim` and commit the output.
+Tests named "target: ..." in `tests/unit/sim.test.js` hold the owner's target feel; breaking one needs his OK.
+
+Planned for M1: `python3 -m http.server 8765` (play at `/index.html?debug`), `npx playwright test`.
 
 Keep this file accurate. Update it in the same PR when a command, path or rule changes.
