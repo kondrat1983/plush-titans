@@ -98,6 +98,8 @@ give each agent exact paths and rules up front. Agents use their own port and Pl
 - Pointer code uses `p.worldX / p.worldY`, never `p.x / p.y`.
 - DOM inputs float above the canvas: hide them under overlays. Block rotation while an input has focus.
 - Never name a scene method `sound`.
+- iOS Safari ignores `user-scalable=no`: fast taps double-tap-zoom the page. Prevent default on `touchend`,
+  `gesturestart`, `dblclick` (non-passive) and drive DOM buttons from pointer events, not `click`.
 - Scenes are reused by Phaser: reset every field in `init()`/`create()`, remove listeners and timers on `shutdown`.
 - Layout from `W`, `H`, `PORTRAIT`, object sizes. No fixed pixel positions. Min text 24 game px, min tap target 90 game px
   with gaps and a press-down state. iPad landscape and iPad 4:3 break new screens first: test them.
