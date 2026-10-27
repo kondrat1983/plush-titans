@@ -2,6 +2,10 @@
 
 Owner decisions, newest on top. Agents treat them as rules; a change is proposed only as an explicit question.
 
+## 2026-10-27 (battle mock-up)
+- **Battle screen mock-up v0.2 approved** on iPhone (`mockup/battle.html`). M1 may start. Its layout is the reference
+  for the M1 battle scene.
+
 ## 2026-10-27 (M0 economy)
 - **Stages go on past 30 in M1** (stronger Titans, same art) until M2 adds worlds. The game does not end at Professor Hoot.
 - **Offline stars at night count the squad as it was before the Bedtime reset** (a small morning head start).

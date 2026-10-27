@@ -4,8 +4,8 @@ Tap-idle game on Phaser 3 where the heroes are a child's real toys. Spec: `READM
 Lessons from the sister game: `docs/from-plush-squad.md` (section numbers below like "PS §5" point there).
 Owner decisions: `docs/DECISIONS.md` (newest on top). They are rules; propose a change only as an explicit question.
 
-Status: M0 (economy simulator). No game code yet. Order of work: **M0 economy simulator -> static battle-screen mock-up on
-Pages, approved by the owner on his iPhone -> M1.** No production game code before the mock-up is approved.
+Status: M0 done, battle mock-up approved (`mockup/battle.html`, the layout reference). **M1 in progress**, in PRs:
+core (shell, PWA, layout, save, tests) -> battle -> squad -> Bedtime and Dreams -> parents -> + Toy -> audio.
 
 ---
 
