@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Plush Titans: battle mock-up</title>
+<meta name="theme-color" content="#7fbf8f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Titans mock">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!--
+  STATIC MOCK-UP for the owner to judge layout and feel on a real iPhone. Throwaway code, not the game:
+  M1 will be Phaser. Numbers come from js/economy.js. Tap the label bottom-left to switch Normal / Boss / Big numbers.
+-->
+<style>
+@font-face{font-family:Poppins;src:url(../assets/fonts/Poppins-Bold.ttf) format("truetype");font-weight:700;font-display:block}
+@font-face{font-family:Poppins;src:url(../assets/fonts/Poppins-Medium.ttf) format("truetype");font-weight:500;font-display:block}
+:root{
+  --sky1:#b9a7f0; --sky2:#ffd3c2; --hill1:#a6dcb0; --hill2:#7fbf8f; --ink:#3a2c5c; --card:#fff8f0;
+  --gold:#ffc83d; --moon:#2d2a6e; --hp:#ff7aa8; --hp2:#ffb3cb; --shadow:0 4px 0 rgba(58,44,92,.25);
+  --sa-t:env(safe-area-inset-top,0px); --sa-b:env(safe-area-inset-bottom,0px);
+  --sa-l:env(safe-area-inset-left,0px); --sa-r:env(safe-area-inset-right,0px);
+}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+/* page colour = the hills at the bottom, so the iOS 26 home-screen strip below the page matches the scene */
+html,body{background:var(--hill2)}
+body{font-family:Poppins,system-ui,sans-serif;font-weight:700;color:var(--ink)}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
+
+/* full-bleed scene: under the status bar and the home bar */
+#scene{position:fixed;inset:0;background:linear-gradient(var(--sky1),var(--sky2) 62%,var(--hill1) 62%)}
+#scene svg{position:absolute;left:0;bottom:0;width:100%;height:46%}
+.cloud{position:absolute;background:#fff;border-radius:999px;opacity:.75}
+.cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+.cloud::before{width:55%;height:160%;left:15%;bottom:20%}
+.cloud::after{width:40%;height:130%;right:12%;bottom:15%}
+
+/* the UI stays inside the safe area */
+#ui{position:fixed;top:var(--sa-t);bottom:var(--sa-b);left:var(--sa-l);right:var(--sa-r);
+  display:flex;flex-direction:column;padding:8px 12px 24px;box-sizing:border-box;gap:8px}
+
+.top{display:flex;align-items:center;gap:8px}
+.icon-btn{width:48px;height:48px;border-radius:16px;background:rgba(255,255,255,.7);display:grid;place-items:center;
+  box-shadow:var(--shadow);flex:none;transition:transform .08s}
+.icon-btn:active,.big-btn:active,.hero:active{transform:translateY(3px) scale(.97)}
+.where{flex:1;text-align:center;line-height:1.05}
+.where small{display:block;font-size:13px;letter-spacing:.12em;opacity:.75;font-weight:500}
+.where b{font-size:24px}
+.stars{display:flex;align-items:center;gap:4px;background:var(--card);border-radius:999px;padding:6px 12px 6px 8px;
+  box-shadow:var(--shadow);font-size:19px;min-width:72px;justify-content:center;flex:none}
+.stars.pop{animation:pop .3s}
+@keyframes pop{50%{transform:scale(1.18)}}
+
+.titan-info{background:rgba(255,255,255,.72);border-radius:18px;padding:8px 12px 10px;box-shadow:var(--shadow)}
+.titan-row{display:flex;justify-content:space-between;align-items:baseline;font-size:16px;margin-bottom:6px}
+.titan-row span{font-size:14px;font-weight:500}
+.bar{height:22px;border-radius:12px;background:#fde3ec;overflow:hidden;position:relative}
+.bar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(var(--hp2),var(--hp));border-radius:12px;transition:width .12s}
+.kills{display:flex;gap:5px;justify-content:center;margin-top:8px;align-items:center}
+.kills i{width:14px;height:14px;border-radius:50%;background:#e6dcf5;display:block}
+.kills i.on{background:var(--gold);box-shadow:0 0 0 2px #fff inset}
+.boss-tag{display:none;font-size:14px;align-items:center;gap:8px;justify-content:center;margin-top:8px}
+.boss .kills{display:none}.boss .boss-tag{display:flex}
+.moonclock{width:40px;height:40px;flex:none}
+
+/* the big tap area */
+#arena{flex:1;position:relative;min-height:150px;touch-action:manipulation}
+#titan{position:absolute;left:50%;top:52%;width:min(78vw,52vh,420px);transform:translate(-50%,-50%);transition:opacity .4s}
+#titan.hit{animation:squash .16s}
+@keyframes squash{50%{transform:translate(-50%,-50%) scale(1.06,.92)}}
+#titan.sleep{opacity:0;transform:translate(-50%,-30%) scale(.85);transition:opacity .5s,transform .5s}
+.hint{position:absolute;left:50%;bottom:4%;transform:translateX(-50%);font-size:22px;color:#fff;
+  text-shadow:0 2px 0 var(--ink);animation:bob 1.2s ease-in-out infinite;pointer-events:none}
+@keyframes bob{50%{transform:translate(-50%,-6px)}}
+.dmg{position:absolute;pointer-events:none;font-size:26px;color:#fff;text-shadow:0 2px 0 var(--ink),0 0 6px var(--ink);
+  animation:up .9s ease-out forwards;white-space:nowrap}
+.dmg.small{font-size:17px;color:#fff6c9}
+.dmg.crit{font-size:34px;color:var(--gold)}
+@keyframes up{to{transform:translateY(-90px);opacity:0}}
+.pillow{position:absolute;width:44px;height:32px;pointer-events:none}
+.feather{position:absolute;width:16px;height:16px;pointer-events:none}
+.zzz{position:absolute;left:50%;top:30%;font-size:40px;color:#fff;text-shadow:0 2px 0 var(--ink);pointer-events:none;animation:up 1.2s forwards}
+.toast{position:absolute;left:50%;top:6%;transform:translateX(-50%);background:var(--card);border-radius:16px;padding:10px 14px;
+  font-size:16px;box-shadow:var(--shadow);text-align:center;width:max-content;max-width:90%;pointer-events:none;animation:fadein .2s}
+@keyframes fadein{from{opacity:0}}
+
+.squad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.hero{background:var(--card);border-radius:16px;padding:6px 4px 6px;text-align:center;box-shadow:var(--shadow);
+  min-height:92px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;transition:transform .08s}
+.hero svg{width:46px;height:46px}
+.hero b{font-size:14px;line-height:1}
+.hero span{font-size:12px;font-weight:500;opacity:.8}
+.hero.hitting svg{animation:pop .25s}
+
+.actions{display:flex;gap:10px}
+.big-btn{flex:1;height:60px;border-radius:20px;background:var(--gold);box-shadow:var(--shadow);font-size:20px;
+  display:flex;align-items:center;justify-content:center;gap:8px;position:relative;transition:transform .08s}
+.big-btn .badge{position:absolute;top:-6px;right:-4px;background:var(--hp);color:#fff;border-radius:999px;font-size:13px;
+  padding:2px 8px;box-shadow:0 0 0 3px #fff}
+.moon-btn{flex:none;width:76px;background:var(--moon);color:#fff}
+.mock{position:fixed;left:calc(var(--sa-l) + 8px);bottom:var(--sa-b);font-size:11px;font-weight:500;color:var(--ink);
+  opacity:.7;padding:4px 8px;z-index:5}
+
+/* landscape: the arena gets the left side, the controls the right */
+@media (orientation:landscape) and (max-height:600px){
+  #ui{display:grid;grid-template-columns:1fr minmax(300px,40%);grid-template-rows:auto auto 1fr auto;column-gap:14px}
+  .top{grid-column:1/3}
+  .titan-info{grid-column:2;grid-row:2}
+  #arena{grid-column:1;grid-row:2/5}
+  .squad{grid-column:2;grid-row:3;align-self:end}
+  .actions{grid-column:2;grid-row:4}
+  #titan{width:min(40vw,62vh,360px)}
+}
+@media (prefers-reduced-motion:reduce){
+  .hint,#titan.hit{animation:none}
+}
+</style>
+</head>
+<body>
+<div id="scene">
+  <div class="cloud" style="width:90px;height:26px;left:8%;top:22%"></div>
+  <div class="cloud" style="width:120px;height:32px;right:6%;top:30%"></div>
+  <!-- pillow hills -->
+  <svg viewBox="0 0 400 200" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 70 Q60 20 130 60 T260 55 T400 50 V200 H0Z" fill="#bfe6c4"/>
+    <path d="M0 110 Q90 60 190 100 T400 90 V200 H0Z" fill="#a6dcb0"/>
+    <path d="M0 150 Q120 110 230 140 T400 135 V200 H0Z" fill="#7fbf8f"/>
+  </svg>
+</div>
+
+<div id="ui">
+  <div class="top">
+    <button class="icon-btn" id="mute" aria-label="Sound">
+      <svg width="26" height="26" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#3a2c5c"/><path id="waves" d="M16 8c1.5 1.2 1.5 6.8 0 8M18.5 5.5c3 2.5 3 10.5 0 13" stroke="#3a2c5c" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+    </button>
+    <div class="where"><small id="world">PILLOW HILLS</small><b id="stage">Stage 23</b></div>
+    <div class="stars" id="stars">
+      <svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 .8-5.2 4.8 1.5 7L12 17.5 5.7 21l1.5-7L2 9.3l7-.8z" fill="#ffc83d" stroke="#c98f00" stroke-width="1.2" stroke-linejoin="round"/></svg>
+      <span id="starN">0</span>
+    </div>
+  </div>
+
+  <div class="titan-info" id="info">
+    <div class="titan-row"><b id="tname">Snoozy Puff</b><span id="hpN"></span></div>
+    <div class="bar"><i id="hpBar" style="width:100%"></i></div>
+    <div class="kills" id="kills"></div>
+    <div class="boss-tag">
+      <svg class="moonclock" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="#e6dcf5"/>
+        <circle id="clock" cx="18" cy="18" r="15" fill="none" stroke="#2d2a6e" stroke-width="6" stroke-dasharray="94.2" stroke-dashoffset="0" transform="rotate(-90 18 18)"/>
+        <path d="M21 10a8 8 0 1 0 5 13 7 7 0 0 1-5-13z" fill="#ffc83d"/></svg>
+      <span>BOSS! Make Hoot sleepy before the moon fills up</span>
+    </div>
+  </div>
+
+  <div id="arena" aria-label="Tap the Titan">
+    <div id="titan"></div>
+    <div class="hint" id="hint">TAP TAP TAP!</div>
+  </div>
+
+  <div class="squad" id="squad"></div>
+
+  <div class="actions">
+    <button class="big-btn" id="squadBtn">
+      <svg width="26" height="26" viewBox="0 0 24 24"><path d="M12 3l3 6h-2v5h-2V9H9z M5 20h14v-2H5z" fill="#3a2c5c"/></svg>
+      LEVEL UP<span class="badge">2</span>
+    </button>
+    <button class="big-btn moon-btn" id="moonBtn" aria-label="Bedtime">
+      <svg width="34" height="34" viewBox="0 0 24 24"><path d="M14 3a9 9 0 1 0 7 14A8 8 0 0 1 14 3z" fill="#ffc83d"/><circle cx="18" cy="6" r="1.2" fill="#fff"/><circle cx="21" cy="10" r=".8" fill="#fff"/></svg>
+    </button>
+  </div>
+</div>
+<button class="mock" id="mock">mock-up v0.1 · Normal</button>
+
+<script src="../js/economy.js"></script>
+<script>
+(function () {
+  'use strict';
+  var E = window.PTEconomy, C = E.C;
+  var $ = function (id) { return document.getElementById(id); };
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- art (simple vector, made in code) ----------
+  function eyes(y, sleepy) {
+    return sleepy
+      ? '<path d="M70 ' + y + 'q10 8 20 0M110 ' + y + 'q10 8 20 0" stroke="#3a2c5c" stroke-width="5" fill="none" stroke-linecap="round"/>'
+      : '<circle cx="80" cy="' + y + '" r="7" fill="#3a2c5c"/><circle cx="120" cy="' + y + '" r="7" fill="#3a2c5c"/><circle cx="82" cy="' + (y - 2) + '" r="2.5" fill="#fff"/><circle cx="122" cy="' + (y - 2) + '" r="2.5" fill="#fff"/>';
+  }
+  var TITANS = [
+    { name: 'Snoozy Puff', col: '#ffd1e3', dark: '#f59cc0' },
+    { name: 'Big Fluff', col: '#cfe7ff', dark: '#8ec1f2' },
+    { name: 'Mister Cushion', col: '#ffe7a8', dark: '#f2c45a' },
+    { name: 'Lady Lumpy', col: '#d9f5d0', dark: '#9fd68f' },
+  ];
+  function titanSVG(t) {
+    // a giant pillow with tassels, chubby arms and a sleepy grin
+    return '<svg viewBox="0 0 200 190" width="100%">' +
+      '<ellipse cx="100" cy="182" rx="70" ry="8" fill="rgba(58,44,92,.18)"/>' +
+      '<path d="M30 40 Q100 10 170 40 Q190 100 170 160 Q100 185 30 160 Q10 100 30 40Z" fill="' + t.col + '" stroke="' + t.dark + '" stroke-width="5"/>' +
+      '<path d="M60 60 Q100 48 140 60" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" opacity=".7"/>' +
+      [[30, 40], [170, 40], [30, 160], [170, 160]].map(function (p) { return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="9" fill="' + t.dark + '"/>'; }).join('') +
+      '<ellipse cx="22" cy="110" rx="14" ry="20" fill="' + t.col + '" stroke="' + t.dark + '" stroke-width="5"/>' +
+      '<ellipse cx="178" cy="110" rx="14" ry="20" fill="' + t.col + '" stroke="' + t.dark + '" stroke-width="5"/>' +
+      eyes(95, false) +
+      '<circle cx="66" cy="115" r="9" fill="#ff9fb8" opacity=".6"/><circle cx="134" cy="115" r="9" fill="#ff9fb8" opacity=".6"/>' +
+      '<path d="M86 120 q14 12 28 0" stroke="#3a2c5c" stroke-width="5" fill="none" stroke-linecap="round"/></svg>';
+  }
+  function hootSVG() {
+    // Professor Hoot, giant: an owl with glasses and a graduation cap
+    return '<svg viewBox="0 0 200 200" width="100%">' +
+      '<ellipse cx="100" cy="192" rx="70" ry="8" fill="rgba(58,44,92,.18)"/>' +
+      '<ellipse cx="100" cy="120" rx="72" ry="72" fill="#b48a62" stroke="#7d5a3c" stroke-width="5"/>' +
+      '<ellipse cx="100" cy="140" rx="44" ry="46" fill="#f1dcc0"/>' +
+      '<path d="M100 150 l-6 0 m6 -10 l-6 0 m22 10 l-6 0 m6 -10 l-6 0" stroke="#d1b28e" stroke-width="3" stroke-linecap="round"/>' +
+      '<circle cx="72" cy="98" r="22" fill="#fff" stroke="#3a2c5c" stroke-width="5"/><circle cx="128" cy="98" r="22" fill="#fff" stroke="#3a2c5c" stroke-width="5"/>' +
+      '<path d="M94 98 h12" stroke="#3a2c5c" stroke-width="5"/>' +
+      '<circle cx="74" cy="100" r="8" fill="#3a2c5c"/><circle cx="126" cy="100" r="8" fill="#3a2c5c"/>' +
+      '<path d="M92 112 l8 12 l8 -12z" fill="#ffb03a"/>' +
+      '<path d="M40 52 L100 30 L160 52 L100 72Z" fill="#3a2c5c"/><rect x="78" y="56" width="44" height="16" fill="#3a2c5c"/>' +
+      '<path d="M156 52 v26" stroke="#ffc83d" stroke-width="4"/><circle cx="156" cy="80" r="5" fill="#ffc83d"/></svg>';
+  }
+  var HEROES = [
+    { id: 'fluffy', name: 'Fluffy', lvl: 34, svg: '<circle cx="24" cy="26" r="18" fill="#fff" stroke="#c9b8ef" stroke-width="3"/><circle cx="18" cy="24" r="2.6" fill="#3a2c5c"/><circle cx="30" cy="24" r="2.6" fill="#3a2c5c"/><path d="M20 31q4 3 8 0" stroke="#3a2c5c" stroke-width="2" fill="none" stroke-linecap="round"/>' },
+    { id: 'bear', name: 'Bear', lvl: 27, svg: '<circle cx="12" cy="12" r="7" fill="#b5835a"/><circle cx="36" cy="12" r="7" fill="#b5835a"/><circle cx="24" cy="26" r="17" fill="#c99467"/><ellipse cx="24" cy="31" rx="8" ry="6" fill="#f0d6b8"/><circle cx="18" cy="22" r="2.6" fill="#3a2c5c"/><circle cx="30" cy="22" r="2.6" fill="#3a2c5c"/><circle cx="24" cy="29" r="2.4" fill="#3a2c5c"/>' },
+    { id: 'bunny', name: 'Bunny', lvl: 15, svg: '<ellipse cx="17" cy="11" rx="5" ry="11" fill="#f3f0f7" stroke="#e0b8cf" stroke-width="2"/><ellipse cx="31" cy="11" rx="5" ry="11" fill="#f3f0f7" stroke="#e0b8cf" stroke-width="2"/><circle cx="24" cy="29" r="15" fill="#f3f0f7" stroke="#e0b8cf" stroke-width="2"/><circle cx="19" cy="27" r="2.4" fill="#3a2c5c"/><circle cx="29" cy="27" r="2.4" fill="#3a2c5c"/><circle cx="24" cy="32" r="2" fill="#ff8fb3"/>' },
+    { id: 'dino', name: 'Dino', lvl: 4, svg: '<path d="M10 14l4-6 4 6 4-7 4 7 4-6 4 6" fill="#6fcf7f"/><ellipse cx="24" cy="28" rx="18" ry="15" fill="#8ee09a" stroke="#4fae60" stroke-width="2"/><circle cx="17" cy="25" r="2.6" fill="#3a2c5c"/><circle cx="31" cy="25" r="2.6" fill="#3a2c5c"/><path d="M17 33q7 4 14 0" stroke="#3a2c5c" stroke-width="2" fill="none" stroke-linecap="round"/>' },
+  ];
+  var PILLOW = '<svg viewBox="0 0 44 32" width="44" height="32"><path d="M4 6Q22 0 40 6Q44 16 40 26Q22 32 4 26Q0 16 4 6Z" fill="#fff" stroke="#c9b8ef" stroke-width="2.5"/></svg>';
+  var FEATHER = '<svg viewBox="0 0 16 16" width="16" height="16"><path d="M2 14C4 6 9 2 14 2C13 8 8 12 2 14Z" fill="#fff" stroke="#c9b8ef" stroke-width="1.2"/></svg>';
+
+  // ---------- number format (one formatter, safe for NaN/Infinity) ----------
+  var UNITS = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'];
+  function fmt(n) {
+    if (!isFinite(n)) return '∞';
+    if (n < 1000) return String(Math.floor(n));
+    var u = Math.min(Math.floor(Math.log10(n) / 3), UNITS.length - 1);
+    var v = n / Math.pow(1000, u);
+    if (u === UNITS.length - 1 && v >= 1000) return n.toExponential(1);
+    return (v < 10 ? v.toFixed(2) : v < 100 ? v.toFixed(1) : Math.floor(v)) + UNITS[u];
+  }
+
+  // ---------- mock state ----------
+  var MODES = [
+    { label: 'Normal', stage: 23, world: 'PILLOW HILLS' },
+    { label: 'Boss', stage: 30, world: 'PILLOW HILLS' },
+    { label: 'Big numbers', stage: 147, world: 'PILLOW HILLS' },
+  ];
+  var mode = 0, st;
+  function reset() {
+    var m = MODES[mode];
+    st = { stage: m.stage, kills: 4, stars: m.stage > 100 ? 4.2e17 : m.stage === 30 ? 152000 : 12400, ti: 0, tapped: false, bossLeft: C.BOSS_TIME };
+    $('mock').textContent = 'mock-up v0.1 · ' + m.label;
+    $('world').textContent = m.world;
+    newTitan();
+  }
+  function newTitan() {
+    var boss = E.isBoss(st.stage);
+    st.max = E.hp(st.stage);
+    st.hp = st.max;
+    // mock damage: a Titan takes about 5 s at 5 taps a second with the squad helping
+    st.tap = st.max / (boss ? 40 : 30);
+    st.dps = st.max / (boss ? 10 : 12);
+    st.bossLeft = C.BOSS_TIME;
+    $('info').classList.toggle('boss', boss);
+    $('stage').textContent = (boss ? 'Boss · ' : 'Stage ') + st.stage;
+    $('tname').textContent = boss ? 'Professor Hoot' : TITANS[st.ti % TITANS.length].name;
+    $('titan').innerHTML = boss ? hootSVG() : titanSVG(TITANS[st.ti % TITANS.length]);
+    $('titan').className = '';
+    var k = '';
+    for (var i = 0; i < C.KILLS_PER_STAGE; i++) k += '<i class="' + (i < st.kills ? 'on' : '') + '"></i>';
+    $('kills').innerHTML = k;
+    draw();
+  }
+  function draw() {
+    $('hpBar').style.width = Math.max(0, st.hp / st.max * 100) + '%';
+    $('hpN').textContent = fmt(Math.max(0, st.hp)) + ' / ' + fmt(st.max);
+    $('starN').textContent = fmt(st.stars);
+    $('clock').setAttribute('stroke-dashoffset', String(94.2 * st.bossLeft / C.BOSS_TIME));
+  }
+  function renderSquad() {
+    $('squad').innerHTML = HEROES.map(function (h) {
+      return '<button class="hero" id="h-' + h.id + '"><svg viewBox="0 0 48 48">' + h.svg + '</svg><b>' + h.name + '</b><span>Lv ' + h.lvl + '</span></button>';
+    }).join('');
+  }
+
+  // ---------- effects ----------
+  var arena = $('arena');
+  function at(cls, html, x, y) {
+    var d = document.createElement('div');
+    d.className = cls; d.innerHTML = html; d.style.left = x + 'px'; d.style.top = y + 'px';
+    arena.appendChild(d);
+    return d;
+  }
+  function floatDmg(x, y, n, kind) {
+    var d = at('dmg ' + (kind || ''), (kind === 'crit' ? 'CRIT! ' : '') + fmt(n), x - 20, y - 20);
+    setTimeout(function () { d.remove(); }, 950);
+  }
+  function throwPillow(x, y) {
+    var r = arena.getBoundingClientRect();
+    var p = at('pillow', PILLOW, r.width / 2 - 22, r.height);
+    var a = p.animate([{ transform: 'translate(0,0) rotate(0)' }, { transform: 'translate(' + (x - r.width / 2) + 'px,' + (y - r.height - 16) + 'px) rotate(300deg) scale(.7)' }],
+      { duration: 220, easing: 'ease-out' });
+    a.onfinish = function () { p.remove(); };
+  }
+  function feathers(x, y) {
+    for (var i = 0; i < (reduce ? 3 : 8); i++) {
+      var f = at('feather', FEATHER, x, y);
+      var ang = Math.random() * Math.PI * 2, d = 50 + Math.random() * 50;
+      var a = f.animate([{ transform: 'translate(0,0) rotate(0)', opacity: 1 },
+        { transform: 'translate(' + Math.cos(ang) * d + 'px,' + (Math.sin(ang) * d + 40) + 'px) rotate(' + (Math.random() * 360) + 'deg)', opacity: 0 }],
+        { duration: 800, easing: 'ease-out' });
+      a.onfinish = (function (el) { return function () { el.remove(); }; })(f);
+    }
+  }
+  function toast(text, ms) {
+    var t = at('toast', text, 0, 0);
+    t.style.left = '50%'; t.style.top = '';
+    setTimeout(function () { t.remove(); }, ms || 1800);
+  }
+
+  // ---------- play ----------
+  function hit(n, x, y, kind) {
+    if (st.hp <= 0) return;
+    st.hp -= n;
+    floatDmg(x, y, n, kind);
+    var t = $('titan');
+    if (!reduce) { t.classList.remove('hit'); void t.offsetWidth; t.classList.add('hit'); }
+    if (st.hp <= 0) asleep();
+    draw();
+  }
+  function asleep() {
+    var boss = E.isBoss(st.stage);
+    var got = E.stars(st.stage);
+    st.stars += got;
+    $('stars').classList.remove('pop'); void $('stars').offsetWidth; $('stars').classList.add('pop');
+    $('titan').classList.add('sleep');
+    var z = at('zzz', 'Zzz', 0, 0); z.style.left = '46%'; z.style.top = '';
+    floatDmg(arena.clientWidth / 2, arena.clientHeight * .25, got, 'small');
+    setTimeout(function () {
+      st.ti++;
+      if (boss) { st.stage++; st.kills = 0; toast('Professor Hoot is fast asleep! +' + fmt(got) + ' stars'); }
+      else if (++st.kills >= C.KILLS_PER_STAGE) { st.stage++; st.kills = 0; }
+      newTitan();
+      document.querySelectorAll('.zzz').forEach(function (z) { z.remove(); });
+    }, 700);
+  }
+  arena.addEventListener('pointerdown', function (e) {
+    var r = arena.getBoundingClientRect();
+    var x = e.clientX - r.left, y = e.clientY - r.top;
+    if (!st.tapped) { st.tapped = true; $('hint').style.display = 'none'; }
+    throwPillow(x, y);
+    var crit = Math.random() < .1;
+    setTimeout(function () {
+      hit(st.tap * (crit ? 5 : 1), x, y, crit ? 'crit' : '');
+      if (crit) feathers(x, y);
+    }, 200);
+  });
+  // the squad hits on its own, one hero after another
+  var hi = 0;
+  setInterval(function () {
+    if (document.hidden || st.hp <= 0) return;
+    var h = HEROES[hi++ % HEROES.length];
+    var el = $('h-' + h.id);
+    el.classList.remove('hitting'); void el.offsetWidth; el.classList.add('hitting');
+    var r = arena.getBoundingClientRect();
+    hit(st.dps / 2, r.width * (.35 + Math.random() * .3), r.height * (.35 + Math.random() * .3), 'small');
+  }, 500);
+  // gentle boss timer: when the moon fills up the boss is still awake, back one stage, every star kept
+  setInterval(function () {
+    if (document.hidden || !E.isBoss(st.stage) || st.hp <= 0) return;
+    st.bossLeft = Math.max(0, st.bossLeft - .25);
+    draw();
+    if (st.bossLeft <= 0) {
+      toast('Hoot is still awake! Back to stage ' + (st.stage - 1) + ' to grow stronger. All your stars stay.', 3200);
+      st.stage--; st.kills = 0; newTitan();
+    }
+  }, 250);
+
+  $('moonBtn').onclick = function () { toast('Bedtime screen goes here: Dreams to earn now, Goodnight.', 2200); };
+  $('squadBtn').onclick = function () { toast('Squad screen goes here: level up x1, x10, max.', 2200); };
+  $('mute').onclick = function () { var w = $('waves'); w.style.display = w.style.display === 'none' ? '' : 'none'; };
+  $('mock').onclick = function () { mode = (mode + 1) % MODES.length; reset(); };
+
+  renderSquad();
+  reset();
+})();
+</script>
+</body>
+</html>
