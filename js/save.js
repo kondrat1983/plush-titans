@@ -4,14 +4,20 @@
   'use strict';
 
   const KEY = 'plushtitans_v1';
+  const BACKUP_KEY = 'plushtitans_v1_unreadable'; // a save that could not be read is kept here, never thrown away
+  const GAME = 'plushtitans';                     // marks our saves, so import refuses other files
   const SAVE_V = 1;
 
   const isObj = (x) => x !== null && typeof x === 'object' && !Array.isArray(x);
-  const num = (x, min, dflt) => (Number.isFinite(x) && x >= min ? x : dflt);
-  const int = (x, min, dflt) => (Number.isFinite(x) && x >= min ? Math.floor(x) : dflt);
+  // numbers, also written as strings ("12400"); anything else is not a number
+  const toNum = (x) => (typeof x === 'string' && x.trim() !== '' ? Number(x) : x);
+  const num = (x, min, dflt) => { x = toNum(x); return Number.isFinite(x) && x >= min ? x : dflt; };
+  const int = (x, min, dflt) => { x = toNum(x); return Number.isFinite(x) && x >= min ? Math.floor(x) : dflt; };
+  const hhmm = (x) => (typeof x === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(x) ? x : null);
 
   function defaults() {
     return {
+      game: GAME,
       v: SAVE_V,
       savedAt: 0,
       run: { stage: 1, kills: 0, maxStage: 1, stars: 0, tapLvl: 1, heroes: {}, dreams: 0, dreamsTotal: 0, dreamLvls: {} },
@@ -27,6 +33,7 @@
     const out = {};
     if (!isObj(x)) return out;
     for (const k of Object.keys(x)) {
+      if (!k) continue;
       const l = int(x[k], 1, 0);
       if (l) out[k] = l;
     }
@@ -51,14 +58,17 @@
       dreamLvls: levels(r.dreamLvls),
     };
     run.maxStage = Math.max(run.maxStage, run.stage);
+    const p = isObj(d.parents) ? d.parents : {};
+    const limit = int(p.limitMin, 5, null);
     const out = Object.assign({}, d, {
+      game: GAME,
       v: int(d.v, 1, 1), // the version the save was written with; raised after the steps below
       savedAt: num(d.savedAt, 0, 0),
       run: Object.assign({}, r, run),
       bestStage: Math.max(int(d.bestStage, 1, 1), run.maxStage),
       seen: isObj(d.seen) ? d.seen : {},
       seenVersion: typeof d.seenVersion === 'string' ? d.seenVersion : '',
-      parents: Object.assign({}, base.parents, isObj(d.parents) ? d.parents : {}),
+      parents: Object.assign({}, base.parents, p, { bedtime: hhmm(p.bedtime), limitMin: limit !== null && limit <= 24 * 60 ? limit : null }),
     });
     // future steps go here, in order: if (out.v < 2) { ...; out.v = 2; }
     ((opts && opts.steps) || []).forEach((step) => step(out));
@@ -76,7 +86,10 @@
         let raw = null;
         try { raw = storage && storage.getItem(KEY); } catch (e) { raw = null; }
         let d = null;
-        try { d = raw ? JSON.parse(raw) : null; } catch (e) { d = null; }
+        try { d = raw ? JSON.parse(raw) : null; } catch (e) {
+          d = null;
+          try { storage.setItem(BACKUP_KEY, raw); } catch (e2) {} // keep what we could not read (QA T05)
+        }
         S.data = migrate(d);
         return S.data;
       },
@@ -94,7 +107,7 @@
       importJSON(text) {
         let d;
         try { d = JSON.parse(text); } catch (e) { return false; }
-        if (!isObj(d) || !Number.isFinite(d.v) || !isObj(d.run)) return false;
+        if (!isObj(d) || d.game !== GAME || !Number.isFinite(d.v) || !isObj(d.run)) return false;
         S.data = migrate(d);
         S.store();
         return true;
@@ -110,7 +123,7 @@
     return S;
   }
 
-  const api = { KEY, SAVE_V, defaults, migrate, createSave };
+  const api = { KEY, BACKUP_KEY, GAME, SAVE_V, defaults, migrate, createSave };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.PTSave = api;
 })(typeof self !== 'undefined' ? self : this);

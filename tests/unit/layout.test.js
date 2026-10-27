@@ -16,10 +16,10 @@ test('iPhone portrait: 1080 wide, height from the usable aspect, margins for the
   assert.equal(g.GH, g.H + g.ST + g.SB);
 });
 
-test('iPhone SE portrait keeps at least 1500 units of height', () => {
+test('iPhone SE portrait keeps at least 1300 units of height', () => {
   const g = L.compute({ w: 375, h: 667 }, ins(20, 0, 0, 0));
   assert.equal(g.W, 1080);
-  assert.ok(g.H >= 1500);
+  assert.ok(g.H >= 1300);
 });
 
 test('landscape: 1080 high, width from the aspect, side margins for the notch', () => {
@@ -28,6 +28,12 @@ test('landscape: 1080 high, width from the aspect, side margins for the notch', 
   assert.equal(g.H, 1080);
   assert.ok(g.W >= 1440 && g.W <= 2340);
   assert.ok(g.SL > 0 && g.SR > 0);
+});
+
+test('QA T03: iPad portrait 3:4 fills the screen (no side bars)', () => {
+  const g = L.compute({ w: 768, h: 1024 }, ins(24, 20, 0, 0));
+  const usable = 768 / (1024 - 44);
+  assert.ok(Math.abs(g.W / g.H - usable) < 0.01, `${g.W}x${g.H} vs ${usable}`);
 });
 
 test('iPad sizes stay inside the clamps', () => {

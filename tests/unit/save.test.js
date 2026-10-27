@@ -156,3 +156,32 @@ test('reset gives a fresh save but keeps the parent settings', () => {
   assert.equal(s.data.parents.bedtime, '20:00');
   assert.equal(JSON.parse(st.raw[S.KEY]).run.stage, 1);
 });
+
+test('T05: an unreadable save is kept in a backup key, not lost', () => {
+  const st = memStorage({ [S.KEY]: '{broken' });
+  const s = S.createSave({ storage: st });
+  s.load();
+  assert.equal(st.raw[S.BACKUP_KEY], '{broken');
+  s.store();
+  assert.equal(st.raw[S.BACKUP_KEY], '{broken', 'the backup survives the next store');
+});
+
+test('T06: import accepts only a Plush Titans save', () => {
+  const s = S.createSave({ storage: memStorage() });
+  s.load();
+  s.data.run.stage = 9;
+  assert.equal(s.importJSON(JSON.stringify({ v: 1, run: { stage: 3 } })), false, 'no game mark');
+  assert.equal(s.importJSON(JSON.stringify({ game: 'other', v: 1, run: {} })), false);
+  assert.equal(s.data.run.stage, 9);
+  assert.equal(S.defaults().game, 'plushtitans');
+});
+
+test('T07: number strings are read as numbers; parent settings are checked', () => {
+  const d = S.migrate({ run: { stars: '12400', stage: '7', heroes: { '': 3, bear: '5' } }, parents: { bedtime: '25:99', limitMin: 'lots' } });
+  assert.equal(d.run.stars, 12400);
+  assert.equal(d.run.stage, 7);
+  assert.deepEqual(d.run.heroes, { bear: 5 });
+  assert.deepEqual(d.parents, { bedtime: null, limitMin: null });
+  const ok = S.migrate({ parents: { bedtime: '20:30', limitMin: 45 } });
+  assert.deepEqual(ok.parents, { bedtime: '20:30', limitMin: 45 });
+});

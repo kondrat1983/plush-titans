@@ -71,3 +71,53 @@ test('PLAY, + TOY and PARENTS answer a tap', async ({ page }) => {
   await page.waitForFunction(() => (window.__ptToasts || 0) === 0, null, { timeout: 60000 });
   noErrors(page);
 });
+
+test('QA T02: sliding a finger onto a button does not press it', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await boot(page);
+  const p = await page.evaluate(() => {
+    const s = __game.scene.getScene('title'), c = __game.canvas.getBoundingClientRect(), k = c.width / __game.config.width, L = __titans.L;
+    const b = s.children.list.find((o) => o.label && o.label.text === 'PARENTS');
+    return { x: c.left + (b.x + L.SL) * k, y: c.top + (b.y + L.ST) * k };
+  });
+  await page.mouse.move(p.x, p.y - 200);
+  await page.mouse.down();
+  await page.mouse.move(p.x, p.y, { steps: 5 });
+  await page.waitForTimeout(200);
+  await page.mouse.up();
+  await wait(page, 500);
+  expect(await page.evaluate(() => (window.__ptToastLog || []).length)).toBe(0);
+  noErrors(page);
+});
+
+test('QA T01: twenty fast taps on one button never pile up messages', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await boot(page);
+  const p = await page.evaluate(() => {
+    const s = __game.scene.getScene('title'), c = __game.canvas.getBoundingClientRect(), k = c.width / __game.config.width, L = __titans.L;
+    const b = s.children.list.find((o) => o.label && o.label.text === '+ TOY');
+    return { x: c.left + (b.x + L.SL) * k, y: c.top + (b.y + L.ST) * k };
+  });
+  // the same message is never queued twice: at most the one on screen, nothing waiting (a new one may show once it is gone)
+  for (let i = 0; i < 20; i++) {
+    await page.mouse.move(p.x, p.y); await page.mouse.down(); await page.waitForTimeout(60); await page.mouse.up();
+    const st = await page.evaluate(() => ({ live: window.__ptToasts || 0, q: (__game.scene.getScene('title')._ptToastQ || []).length }));
+    expect(st.live, 'tap ' + i).toBeLessThanOrEqual(1);
+    expect(st.q, 'tap ' + i).toBe(0);
+  }
+  noErrors(page);
+});
+
+test('QA T04: in landscape the title Titan stays clear of the buttons', async ({ page }) => {
+  for (const [w, h] of [[1024, 768], [1180, 820], [844, 390]]) {
+    await page.setViewportSize({ width: w, height: h });
+    await boot(page);
+    const gap = await page.evaluate(() => {
+      const s = __game.scene.getScene('title'), t = s.titan.getBounds();
+      const lefts = s.children.list.filter((o) => o.input && o.label).map((o) => o.x - o.width / 2);
+      return Math.min(...lefts) - t.right;
+    });
+    expect(gap, `${w}x${h}`).toBeGreaterThan(10);
+  }
+  noErrors(page);
+});

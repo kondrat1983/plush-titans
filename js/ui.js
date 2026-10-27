@@ -82,14 +82,20 @@
       c.add(parts);
       c.setSize(w, h).setInteractive({ useHandCursor: true });
       press(scene, c);
-      c.on('pointerup', () => { if (c.input && c.input.enabled && cb) cb(); });
+      // only a press that started on this button counts: sliding a finger onto it does nothing (QA T02)
+      c.on('pointerdown', () => { c._ptDown = true; });
+      c.on('pointerout', () => { c._ptDown = false; });
+      c.on('pointerup', () => { const ok = c._ptDown; c._ptDown = false; if (ok && c.input && c.input.enabled && cb) cb(); });
       return c;
     }
 
     // A short message. One at a time: a new one waits in the scene's queue (every message is seen, once).
     // It sits where the scene says (scene.toastY), clear of the logo and the Titan; it dies with its scene.
     // window.__ptToasts counts shown + waiting toasts for the rotation guard.
+    const TOAST_MAX = 3; // waiting messages; more taps on the same button never pile up (QA T01)
     function toast(scene, text, ms) {
+      const q0 = scene._ptToastQ || [];
+      if ((scene._ptToast && scene._ptToast._text === text) || q0.some((x) => x[0] === text) || q0.length >= TOAST_MAX) return;
       if (PT.DEBUG) (window.__ptToastLog = window.__ptToastLog || []).push(text); // tests read what was shown
       window.__ptToasts = (window.__ptToasts || 0) + 1;
       if (!scene._ptToastQ) {
@@ -111,6 +117,7 @@
       const w = Math.min(t.width + 90, W - 80), h = t.height + 60;
       const c = scene.add.container(W / 2, y, [card(scene, 0, 0, w, h, C.card), t]).setDepth(900).setAlpha(0);
       scene._ptToast = c;
+      c._text = text;
       scene.tweens.add({ targets: c, alpha: 1, duration: 150 });
       scene.time.delayedCall(ms, () => scene.tweens.add({ targets: c, alpha: 0, duration: 200, onComplete: () => {
         c.destroy();

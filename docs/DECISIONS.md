@@ -2,6 +2,12 @@
 
 Owner decisions, newest on top. Agents treat them as rules; a change is proposed only as an explicit question.
 
+## 2026-10-27 (M1 design, first answers)
+- **Crits are real:** 10% chance, x5 damage; go into `js/economy.js` and the simulator.
+- **Tuck-in bonus:** +1 Dream for the first Goodnight of each day.
+- **Toy class:** the classifier suggests Fluffy / Bear / Bunny / Dino, the child can change it; stats always come from the class.
+- **Bedtime default:** off until a parent sets it; wake-up 07:00.
+
 ## 2026-10-27 (battle mock-up)
 - **Battle screen mock-up v0.2 approved** on iPhone (`mockup/battle.html`). M1 may start. Its layout is the reference
   for the M1 battle scene.

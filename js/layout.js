@@ -16,7 +16,8 @@
     const PORTRAIT = UH > UW;
     const ASPECT = UW / UH;
     const W = PORTRAIT ? 1080 : Math.round(clamp(1080 * ASPECT, 1440, 2340));
-    const H = PORTRAIT ? Math.round(clamp(1080 / ASPECT, 1500, 2340)) : 1080;
+    // portrait floor 1300: an iPad in portrait (3:4 minus the bars, about 1380) fills the screen with no side bars (QA T03)
+    const H = PORTRAIT ? Math.round(clamp(1080 / ASPECT, 1300, 2340)) : 1080;
     const KU = PORTRAIT ? W / UW : H / UH; // game units per CSS px
     const ST = Math.round(ins.t * KU), SB = Math.round(ins.b * KU), SL = Math.round(ins.l * KU), SR = Math.round(ins.r * KU);
     const GW = W + SL + SR, GH = H + ST + SB;
