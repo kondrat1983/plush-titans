@@ -2,6 +2,20 @@
 
 Owner decisions, newest on top. Agents treat them as rules; a change is proposed only as an explicit question.
 
+## 2026-10-27 (M1 design, first answers)
+- **Crits are real:** 10% chance, x5 damage; go into `js/economy.js` and the simulator.
+- **Tuck-in bonus:** +1 Dream for the first Goodnight of each day.
+- **Toy class:** the classifier suggests Fluffy / Bear / Bunny / Dino, the child can change it; stats always come from the class.
+- **Bedtime default:** off until a parent sets it; wake-up 07:00.
+- **Goodnight before stage 20** (0 Dreams): no reset, the run goes on tomorrow.
+- **Moving a save in M1:** JSON export/import without toy photos. Accounts, cloud saves and photo sync come with
+  Supabase in M2 (as in Plush Squad).
+- **Boss names at 10 and 20:** the chief tester picks them; working names King Cushion and Duvet Duchess until then.
+
+## 2026-10-27 (battle mock-up)
+- **Battle screen mock-up v0.2 approved** on iPhone (`mockup/battle.html`). M1 may start. Its layout is the reference
+  for the M1 battle scene.
+
 ## 2026-10-27 (M0 economy)
 - **Stages go on past 30 in M1** (stronger Titans, same art) until M2 adds worlds. The game does not end at Professor Hoot.
 - **Offline stars at night count the squad as it was before the Bedtime reset** (a small morning head start).

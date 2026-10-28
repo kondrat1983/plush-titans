@@ -4,8 +4,8 @@ Tap-idle game on Phaser 3 where the heroes are a child's real toys. Spec: `READM
 Lessons from the sister game: `docs/from-plush-squad.md` (section numbers below like "PS §5" point there).
 Owner decisions: `docs/DECISIONS.md` (newest on top). They are rules; propose a change only as an explicit question.
 
-Status: M0 (economy simulator). No game code yet. Order of work: **M0 economy simulator -> static battle-screen mock-up on
-Pages, approved by the owner on his iPhone -> M1.** No production game code before the mock-up is approved.
+Status: M0 done, battle mock-up approved (`mockup/battle.html`, the layout reference). **M1 in progress**, in PRs:
+core (shell, PWA, layout, save, tests) -> battle -> squad -> Bedtime and Dreams -> parents -> + Toy -> audio.
 
 ---
 
@@ -136,6 +136,17 @@ npm run sim                           # economy report -> docs/economy/report.md
 CI fails if `docs/economy/` is stale: after any change to `js/economy.js` or `sim/`, run `npm run sim` and commit the output.
 Tests named "target: ..." in `tests/unit/sim.test.js` hold the owner's target feel; breaking one needs his OK.
 
-Planned for M1: `python3 -m http.server 8765` (play at `/index.html?debug`), `npx playwright test`.
+```
+npm run serve                         # play: http://localhost:8765/index.html?debug
+npm install && npm run test:e2e       # browser tests (Playwright 1.63.0, pinned; Chromium is preinstalled in cloud sessions)
+PT_PORT=8781 npx playwright test      # own port for a parallel agent
+node tools/icons.js                   # re-render the app icons from js/art.js
+```
+
+Layout of the code: `js/economy.js` (balance), `js/util.js` (fmt, dates), `js/save.js`, `js/layout.js` (screen sizes,
+safe area, iOS strip), `js/art.js` (vector art -> textures), `js/ui.js` (txt, button, card, toast, scenery, fade),
+`js/scenes/*.js` (one scene per file, registered in `window.PTScenes`), `js/main.js` (builds the game, rotation rebuild,
+debug API). Scenes get `PT` (sizes, `ui`, `Save`, `E`, `U`). Every new file goes into `index.html` (scripts) and `sw.js`
+`FILES`; `tests/unit/release.test.js` fails otherwise.
 
 Keep this file accurate. Update it in the same PR when a command, path or rule changes.

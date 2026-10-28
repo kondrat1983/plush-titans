@@ -20,3 +20,22 @@ jobs:
         run: |
           node sim/run.js
           git diff --exit-code docs/economy/ || { echo "docs/economy/ is stale: run 'node sim/run.js' and commit"; exit 1; }
+
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Browser tests (Playwright)
+        run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7

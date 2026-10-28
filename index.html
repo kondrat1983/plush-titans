@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Plush Titans</title>
+<meta name="description" content="Your toys become heroes and put giant plush Titans to sleep.">
+<meta name="theme-color" content="#b9a7f0">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/icons/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png?v=0.1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Plush Titans">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+@font-face{font-family:Poppins;src:url(assets/fonts/Poppins-Bold.ttf) format("truetype");font-weight:700;font-display:block}
+@font-face{font-family:Poppins;src:url(assets/fonts/Poppins-Medium.ttf) format("truetype");font-weight:500;font-display:block}
+html,body{margin:0;height:100%;background:#7fbf8f;overflow:hidden;overscroll-behavior:none;touch-action:none;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+/* the game fills the whole screen; #safe only measures the safe areas (status bar, notch, home bar) */
+#game{position:fixed;left:0;top:0;right:0;bottom:0}
+#safe{position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;
+  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+#game canvas{display:block;touch-action:none}
+.pre{position:fixed;left:-999px;font-family:Poppins}
+</style>
+</head>
+<body>
+<div id="game"></div><div id="safe"></div>
+<span class="pre" style="font-weight:700">.</span><span class="pre" style="font-weight:500">.</span>
+<script>
+// iOS Safari ignores user-scalable=no: fast taps would double-tap-zoom the page. Text fields still get their taps.
+['touchend', 'gesturestart', 'gesturechange', 'dblclick'].forEach(function (ev) {
+  document.addEventListener(ev, function (e) {
+    if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+    e.preventDefault();
+  }, { passive: false });
+});
+</script>
+<script src="vendor/phaser.min.js"></script>
+<script src="js/economy.js"></script>
+<script src="js/util.js"></script>
+<script src="js/save.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/art.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/scenes/boot.js"></script>
+<script src="js/scenes/title.js"></script>
+<script src="js/main.js"></script>
+<script>
+// no service worker on hosts that serve every upload fresh or wrap the game in an iframe
+if ('serviceWorker' in navigator && location.protocol === 'https:' && !/claude\.ai|claudeusercontent|itch\.zone|itch\.io|hwcdn\.net/.test(location.hostname)) {
+  var hadController = !!navigator.serviceWorker.controller, reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', function () {
+    // a new version just took over: reload once, but only on the title screen (never in the middle of a fight);
+    // otherwise main.js reloads the next time the title opens
+    if (!hadController || reloaded) return;
+    var g = window.__game;
+    if (g && g.scene && g.scene.isActive('title')) { reloaded = true; if (window.__save) window.__save.store(); location.reload(); }
+    else window.__ptReloadPending = true;
+  });
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function (reg) { reg.update(); }).catch(function () {});
+  });
+}
+</script>
+</body>
+</html>
